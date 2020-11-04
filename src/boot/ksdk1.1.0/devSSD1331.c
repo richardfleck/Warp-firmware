@@ -154,10 +154,21 @@ devSSD1331init(void)
 
 	/*
 	 *	Any post-initialization drawing commands go here.
-	 */
-	//...
-
-
-
+	 */	
+        writeCommand(0x22);      // Enter 'draw rectangle' mode
+	writeCommand(0x00);      // Start column address
+        writeCommand(0x00);      // Start row address
+        writeCommand(0x5F);      // End column address
+        writeCommand(0x3F);      // End row address
+        writeCommand(0x00);      // Set outline colour C
+        writeCommand(0x3F);      // Set outline colour B
+        writeCommand(0x00);      // Set outline colour A
+        writeCommand(0x00);      // Set fill colour C
+        writeCommand(0x3F);      // Set fill colour B
+        writeCommand(0x00);      // Set fill colour A
+	writeCommand(0x82);      // Enter 'set contrast for colour B' mode
+	writeCommand(0xFF);      // Set contrast for colour B
+	writeCommand(0x87);      // Enter 'set master current control' mode
+	writeCommand(0xF);       // Set master current control
 	return 0;
 }

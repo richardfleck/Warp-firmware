@@ -56,7 +56,7 @@
 #include "warp.h"
 
 #include "devSSD1331.h"
-
+#include "devINA219.h"
 #define WARP_FRDMKL03
 
 
@@ -120,6 +120,8 @@ volatile WarpI2CDeviceState			deviceBMX055magState;
 #ifdef WARP_BUILD_ENABLE_DEVMMA8451Q
 volatile WarpI2CDeviceState			deviceMMA8451QState;
 #endif
+
+volatile WarpI2CDeviceState			deviceINA219State;
 
 #ifdef WARP_BUILD_ENABLE_DEVLPS25H
 volatile WarpI2CDeviceState			deviceLPS25HState;
@@ -1252,6 +1254,8 @@ main(void)
 	initMMA8451Q(	0x1D	/* i2cAddress */,	&deviceMMA8451QState	);
 #endif
 
+	initINA219(	0x40	/* i2cAddress */,	&deviceINA219State	);
+
 #ifdef WARP_BUILD_ENABLE_DEVLPS25H
 	initLPS25H(	0x5C	/* i2cAddress */,	&deviceLPS25HState	);
 #endif
@@ -1466,6 +1470,8 @@ main(void)
 		SEGGER_RTT_WriteString(0, "\r- 'z': dump all sensors data.\n");
 		OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
 
+		SEGGER_RTT_WriteString(0, "\r- '0': measure current.\n");
+	        SEGGER_RTT_WriteString(0, "\r- '1': take 1000 current samples.\n");	
 		SEGGER_RTT_WriteString(0, "\rEnter selection> ");
 		OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
 		key = SEGGER_RTT_WaitKey();
@@ -1745,6 +1751,7 @@ main(void)
 						break;
 					}
 #endif
+
 					default:
 					{
 #ifdef WARP_BUILD_ENABLE_SEGGER_RTT_PRINTF
@@ -2489,6 +2496,24 @@ main(void)
 			/*
 			 *	Ignore naked returns.
 			 */
+                        case '0':
+                        {
+				enableI2Cpins(menuI2cPullupValue);
+                		SEGGER_RTT_printf(0, "\n Current/uA, Bus Voltage/mV"); 
+                                printSensorDataINA219();
+                                break;  
+                        }
+
+                        case '1':
+                        {
+                                enableI2Cpins(menuI2cPullupValue);
+                                SEGGER_RTT_printf(0, "\n Current/uA, Bus Voltage/mV");
+                                for (int i = 0; i<1000; i=i+1){
+                                        printSensorDataINA219();
+                                }
+                                break;
+                        }
+
 			case '\n':
 			{
 				SEGGER_RTT_WriteString(0, "\r\tPayloads make rockets more than just fireworks.");

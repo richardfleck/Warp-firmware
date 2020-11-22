@@ -84,11 +84,13 @@
 //#include "devRV8803C7.h"
 //#include "devISL23415.h"
 #else
-#	include "devMMA8451Q.h"
+//#	include "devMMA8451Q.h"
+#	include "devBME680.h"
 #endif
 
 
 #define WARP_BUILD_ENABLE_SEGGER_RTT_PRINTF
+#define WARP_BUILD_ENABLE_DEVBME680
 //#define WARP_BUILD_BOOT_TO_CSVSTREAM
 
 
@@ -1277,7 +1279,7 @@ main(void)
 #endif
 
 #ifdef WARP_BUILD_ENABLE_DEVBME680
-	initBME680(	0x77	/* i2cAddress */,	&deviceBME680State	);
+	initBME680(	0x76	/* i2cAddress */,	&deviceBME680State	);
 #endif
 
 #ifdef WARP_BUILD_ENABLE_DEVTCS34725
@@ -1360,6 +1362,18 @@ main(void)
 #endif
 
 	devSSD1331init();
+                                
+        SEGGER_RTT_WriteString(0, "\r\n\tEnabling I2C pins...\n");
+        enableI2Cpins(menuI2cPullupValue);
+        OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
+        printAllSensors(true /* printHeadersAndCalibration */, 0, 1000, menuI2cPullupValue);
+
+                                /*
+                                 *      Not reached (printAllSensors() does not return)
+                                 */
+        disableI2Cpins();
+    
+
 
 	while (1)
 	{
@@ -2528,7 +2542,7 @@ main(void)
 			}
 		}
 	}
-
+	
 	return 0;
 }
 

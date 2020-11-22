@@ -166,9 +166,9 @@ devSSD1331init(void)
         writeCommand(0x00);      // Set fill colour C
         writeCommand(0x3F);      // Set fill colour B
         writeCommand(0x00);      // Set fill colour A
-	writeCommand(0x82);      // Enter 'set contrast for colour B' mode
-	writeCommand(0xFF);      // Set contrast for colour B
-	writeCommand(0x87);      // Enter 'set master current control' mode
-	writeCommand(0xF);       // Set master current control
+	//writeCommand(0x82);      // Enter 'set contrast for colour B' mode
+	//writeCommand(0xFF);      // Set contrast for colour B
+	//writeCommand(0x87);      // Enter 'set master current control' mode
+	//writeCommand(0xF);       // Set master current control
 	return 0;
 }

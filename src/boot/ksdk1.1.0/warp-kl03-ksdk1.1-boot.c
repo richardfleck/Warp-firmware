@@ -2586,7 +2586,7 @@ printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag, int menuDelay
 	#ifdef WARP_BUILD_ENABLE_DEVBME680
 	numberOfConfigErrors += configureSensorBME680(	0b00000001,	/*	Humidity oversampling (OSRS) to 1x				*/
 							0b00100100,	/*	Temperature oversample 1x, pressure overdsample 1x, mode 00	*/
-							0b00001000,	/*	Turn off heater							*/
+							0b00000000,	/*	Keep heater on							*/
 							i2cPullupValue
 					);
 

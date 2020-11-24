@@ -2674,7 +2674,7 @@ printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag, int menuDelay
 		OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
 		#endif
 		#ifdef WARP_BUILD_ENABLE_DEVBME680
-		SEGGER_RTT_WriteString(0, " BME680 Press, BME680 Temp, BME680 Hum,");
+		SEGGER_RTT_WriteString(0, " BME680 Temp, BME680 Hum, BME680 VOC,");
 		OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
 		#endif
 		#ifdef WARP_BUILD_ENABLE_DEVBMX055

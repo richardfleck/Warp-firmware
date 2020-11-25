@@ -57,6 +57,7 @@
 
 #include "devSSD1331.h"
 #include "devINA219.h"
+#include "devVEML7700.h"
 #define WARP_FRDMKL03
 
 
@@ -124,6 +125,8 @@ volatile WarpI2CDeviceState			deviceMMA8451QState;
 #endif
 
 volatile WarpI2CDeviceState			deviceINA219State;
+
+volatile WarpI2CDeviceState                     deviceVEML7700State;
 
 #ifdef WARP_BUILD_ENABLE_DEVLPS25H
 volatile WarpI2CDeviceState			deviceLPS25HState;
@@ -1257,6 +1260,8 @@ main(void)
 #endif
 
 	initINA219(	0x40	/* i2cAddress */,	&deviceINA219State	);
+
+        initVEML7700(   0x10    /* i2cAddress */,       &deviceVEML7700State    );
 
 #ifdef WARP_BUILD_ENABLE_DEVLPS25H
 	initLPS25H(	0x5C	/* i2cAddress */,	&deviceLPS25HState	);
@@ -2611,6 +2616,7 @@ printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag, int menuDelay
 		}
 	}
 	#endif
+        numberOfConfigErrors += configureSensorVEML7700(i2cPullupValue);
 
 	#ifdef WARP_BUILD_ENABLE_DEVHDC1000
 	numberOfConfigErrors += writeSensorRegisterHDC1000(kWarpSensorConfigurationRegisterHDC1000Configuration,/* Configuration register	*/
@@ -2677,6 +2683,8 @@ printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag, int menuDelay
 		SEGGER_RTT_WriteString(0, " BME680 Temp, BME680 Hum, BME680 VOC,");
 		OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
 		#endif
+                SEGGER_RTT_WriteString(0, " VEML7700 Lux,");
+                OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
 		#ifdef WARP_BUILD_ENABLE_DEVBMX055
 		SEGGER_RTT_WriteString(0, " BMX055acc x, BMX055acc y, BMX055acc z, BMX055acc Temp,");
 		OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
@@ -2721,6 +2729,7 @@ printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag, int menuDelay
 		#ifdef WARP_BUILD_ENABLE_DEVBME680
 		printSensorDataBME680(hexModeFlag);
 		#endif
+                //printSensorDataVEML7700(hexModeFlag);
 		#ifdef WARP_BUILD_ENABLE_DEVBMX055
 		printSensorDataBMX055accel(hexModeFlag);
 		printSensorDataBMX055mag(hexModeFlag);

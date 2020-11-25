@@ -58,7 +58,7 @@ writeSensorRegisterVEML7700(uint8_t deviceRegister, uint8_t payload, uint16_t me
 
 	commandByte[0] = deviceRegister;
 	payloadByte[0] = 0b00000000;
-	payloadByte[1] = 0b00010010;
+	payloadByte[1] = 0b00000000;
 	status = I2C_DRV_MasterSendDataBlocking(
 							0 /* I2C instance */,
 							&slave,

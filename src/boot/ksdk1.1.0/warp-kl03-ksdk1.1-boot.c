@@ -2729,7 +2729,7 @@ printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag, int menuDelay
 		#ifdef WARP_BUILD_ENABLE_DEVBME680
 		printSensorDataBME680(hexModeFlag);
 		#endif
-                //printSensorDataVEML7700(hexModeFlag);
+                printSensorDataVEML7700(hexModeFlag);
 		#ifdef WARP_BUILD_ENABLE_DEVBMX055
 		printSensorDataBMX055accel(hexModeFlag);
 		printSensorDataBMX055mag(hexModeFlag);
@@ -2749,7 +2749,7 @@ printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag, int menuDelay
 
 		if (menuDelayBetweenEachRun > 0)
 		{
-			OSA_TimeDelay(menuDelayBetweenEachRun);
+			OSA_TimeDelay(2000);
 		}
 
 		readingCount++;

@@ -1371,7 +1371,19 @@ main(void)
         SEGGER_RTT_WriteString(0, "\r\n\tEnabling I2C pins...\n");
         enableI2Cpins(menuI2cPullupValue);
         OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
-        printAllSensors(true /* printHeadersAndCalibration */, 0, 1000, menuI2cPullupValue);
+       configureSensorBME680(  0b00000001,     /*      Humidity oversampling (OSRS) to 1x                              */
+                                                        0b00100101,     /*      Temperature oversample 1x, pressure overdsample 1x, mode 00     */
+                                                        0b00000000,     /*      Keep heater on                                                  */
+                                                        menuI2cPullupValue
+                                        );
+	int current_temp, current_hum, current_gas_res;
+	for(int i = 0; i < 10; i = i+1){
+	updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
+	SEGGER_RTT_printf(0, " \n %d, %d, %d ", current_temp, current_hum, current_gas_res); 
+	OSA_TimeDelay(2000);
+	//devSSD1331DrawTemp(current_temp);
+	}
+	//printAllSensors(true /* printHeadersAndCalibration */, 0, 1000, menuI2cPullupValue);
 
                                 /*
                                  *      Not reached (printAllSensors() does not return)

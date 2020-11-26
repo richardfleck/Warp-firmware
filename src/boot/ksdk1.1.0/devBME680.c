@@ -389,6 +389,200 @@ printSensorDataBME680(bool hexModeFlag, uint16_t menuI2cPullupValue)
 	gas_res_comp = (uint32_t) ((var3g + ((int64_t) var2g >> 1)) / (int64_t) var2g);
 	SEGGER_RTT_printf(0, " %u,", gas_res_comp);
 	
+}
 
+
+void updateSensorDataBME680(int* current_temp, int* current_hum, int* current_gas_res, uint16_t menuI2cPullupValue){
+        uint16_t        readSensorRegisterValueLSB;
+        uint16_t        readSensorRegisterValueMSB;
+        uint16_t        readSensorRegisterValueXLSB;
+        uint32_t        unsignedRawAdcValue;
+        WarpStatus      triggerStatus, i2cReadStatusMSB, i2cReadStatusLSB, i2cReadStatusXLSB;
+
+
+        /*
+         *      First, trigger a measurement
+         */
+        triggerStatus = writeSensorRegisterBME680(kWarpSensorConfigurationRegisterBME680Ctrl_Meas,
+                                                        0b00100101,
+                                                        menuI2cPullupValue);
+
+        /*
+         *  TEMPERATURE MEASUREMENT
+         */
+        i2cReadStatusMSB = readSensorRegisterBME680(kWarpSensorOutputRegisterBME680temp_msb, 1);
+        readSensorRegisterValueMSB = deviceBME680State.i2cBuffer[0];
+        i2cReadStatusLSB = readSensorRegisterBME680(kWarpSensorOutputRegisterBME680temp_lsb, 1);
+        readSensorRegisterValueLSB = deviceBME680State.i2cBuffer[0];
+        i2cReadStatusXLSB = readSensorRegisterBME680(kWarpSensorOutputRegisterBME680temp_xlsb, 1);
+        readSensorRegisterValueXLSB = deviceBME680State.i2cBuffer[0];
+
+        // Temperature calibration parameters
+        uint16_t par_t1 = (deviceBME680CalibrationValues[34] << 8) | deviceBME680CalibrationValues[33];
+        int16_t par_t2 = (deviceBME680CalibrationValues[2] << 8) | deviceBME680CalibrationValues[1];
+        int8_t par_t3 = deviceBME680CalibrationValues[3];
+
+        unsignedRawAdcValue =
+                        ((readSensorRegisterValueMSB & 0xFF)  << 12) |
+                        ((readSensorRegisterValueLSB & 0xFF)  << 4)  |
+                        ((readSensorRegisterValueXLSB & 0xF0) >> 4);
+
+        int32_t var1;
+        int32_t var2;
+        int32_t var3;
+        int32_t var4;
+        int32_t var5;
+        int32_t var6;
+        int16_t temp_comp;
+
+        var1 = (unsignedRawAdcValue >> 3) - (par_t1 << 1);
+        var2 = (var1 * par_t2) >> 11;
+        var3 = ((var1 >> 1) * (var1 >> 1)) >> 12;
+        var3 = ((var3) * (par_t3 << 4)) >> 14;
+        temp_comp = (((var2+var3) * 5) + 128) >> 8;
+
+        if ((triggerStatus != kWarpStatusOK) || (i2cReadStatusMSB != kWarpStatusOK) || (i2cReadStatusLSB != kWarpStatusOK) || (i2cReadStatusXLSB != kWarpStatusOK))
+        {
+                *current_temp = 0;
+        }
+        else
+        {
+   		*current_temp = temp_comp;
+        }
+
+        /*
+         *  HUMIDITY MEASUREMENT
+         */
+
+        i2cReadStatusMSB = readSensorRegisterBME680(kWarpSensorOutputRegisterBME680hum_msb, 1);
+        readSensorRegisterValueMSB = deviceBME680State.i2cBuffer[0];
+        i2cReadStatusLSB = readSensorRegisterBME680(kWarpSensorOutputRegisterBME680hum_lsb, 1);
+        readSensorRegisterValueLSB = deviceBME680State.i2cBuffer[0];
+        unsignedRawAdcValue = ((readSensorRegisterValueMSB & 0xFF) << 8) | (readSensorRegisterValueLSB & 0xFF);
+
+        // Humidity calibration parameters
+        uint16_t par_h1 = (deviceBME680CalibrationValues[27] << 4) | ((deviceBME680CalibrationValues[26] & 0xF0) >>4);
+        uint16_t par_h2 = (deviceBME680CalibrationValues[25] << 4) | ((deviceBME680CalibrationValues[26] & 0xF0) >>4);
+        int8_t par_h3 = deviceBME680CalibrationValues[28];
+        int8_t par_h4 = deviceBME680CalibrationValues[29];
+        int8_t par_h5 = deviceBME680CalibrationValues[30];
+        uint8_t par_h6 = deviceBME680CalibrationValues[31];
+        int8_t par_h7 = deviceBME680CalibrationValues[32];
+        int32_t hum_comp;
+
+        var1 = unsignedRawAdcValue - (par_h1 * 16)
+                - (((temp_comp * par_h3) / 100) >> 1);
+        var2 = (par_h2
+                * (((temp_comp * par_h4) / 100)
+                        + (((temp_comp * ((temp_comp * par_h5) / ( 100))) >> 6)
+                                / 100) + (1 << 14))) >> 10;
+        var3 = var1 * var2;
+        var4 = par_h6 << 7;
+        var4 = ((var4) + ((temp_comp * par_h7) / 100)) >> 4;
+        var5 = ((var3 >> 14) * (var3 >> 14)) >> 10;
+        var6 = (var4 * var5) >> 1;
+        hum_comp = (((var3 + var6) >> 10) * (1000)) >> 12;
+
+        if (hum_comp > 100000) /* Cap at 100%rH */
+                hum_comp = 100000;
+        else if (hum_comp < 0)
+                hum_comp = 0;
+
+        if ((triggerStatus != kWarpStatusOK) || (i2cReadStatusMSB != kWarpStatusOK) || (i2cReadStatusLSB != kWarpStatusOK))
+        {
+                *current_hum = 0;
+        }
+        else
+        {
+        	*current_hum = hum_comp;
+        }
+
+
+
+        /*
+         *    GAS RESISTANCE MEASUREMENT
+         */
+
+        // Gas resistance calibration parameters
+        int32_t par_g1 = deviceBME680CalibrationValues[37];
+        int16_t par_g2 = (deviceBME680CalibrationValues[36] << 8) | deviceBME680CalibrationValues[35];
+        int32_t par_g3 = deviceBME680CalibrationValues[38];
+
+        uint8_t heatr_res;
+        int32_t heatr_res_x100;
+        int32_t temp = 300;
+
+        readSensorRegisterBME680(0x00, 1 /* numberOfBytes */);
+        int8_t res_heat_val = deviceBME680State.i2cBuffer[0];
+        readSensorRegisterBME680(0x02, 1 /* numberOfBytes */);
+        int8_t res_heat_range = (deviceBME680State.i2cBuffer[0] >> 4) & 0x03;
+        readSensorRegisterBME680(0x04, 1 /* numberOfBytes */);
+        int64_t range_sw_err = deviceBME680State.i2cBuffer[0];
+
+        var1 = ((2315 * par_g3) / 1000) * 256;
+        var2 = (par_g1 + 784) * (((((par_g2 + 154009) * temp * 5) / 100) + 3276800) / 10);
+        var3 = var1 + (var2 >> 1);
+        var4 = (var3 / (res_heat_range + 4));
+        var5 = (131 * res_heat_val) + 65536;
+        heatr_res_x100 = ((var4 / var5) - 250) * 34;
+        heatr_res = (heatr_res_x100 + 50) / 100;
+
+        writeSensorRegisterBME680(0x64, 0x59, menuI2cPullupValue); //set gas_wait_0 to 0x59 to select 100ms heat up duration
+        writeSensorRegisterBME680(0x5A, heatr_res, menuI2cPullupValue); //set res_heat_0 to the target heater resistance
+        writeSensorRegisterBME680(0x71, 0b00010000, menuI2cPullupValue); //set nb_conv<3:0> to 0x0 to select profile 0, set run_gas to 1
+        // CHECK FOR NEW DATA
+        int8_t new_data_0 = 0;
+        int8_t gas_reading_MSB;
+        int8_t gas_reading_LSB;
+        int16_t gas_res_adc = 0;
+        int8_t gas_range = 0;
+
+        while(new_data_0==0){
+                readSensorRegisterBME680(0x1D, 1 /* numberOfBytes */);
+                new_data_0 = deviceBME680State.i2cBuffer[0] >> 7;
+        }
+
+        readSensorRegisterBME680(0x2A, 1 /* numberOfBytes */);
+        gas_reading_MSB = deviceBME680State.i2cBuffer[0];
+        readSensorRegisterBME680(0x2B, 1 /* numberOfBytes */);
+        gas_reading_LSB = deviceBME680State.i2cBuffer[0];
+
+        if(((gas_reading_LSB & 0x30) >> 4)  == 0x03){
+                gas_res_adc = (gas_reading_MSB << 2) | (gas_reading_LSB >> 6);
+                gas_range = gas_reading_LSB & 0x0F;
+        }
+
+        // CALCULATE COMPENSATED GAS RESISTANCE
+        int64_t var1g;
+        uint64_t var2g;
+        int64_t var3g;
+        uint32_t gas_res_comp;
+        /**Look up table 1 for the possible gas range values */
+        uint32_t lookupTable1[16] = { UINT32_C(2147483647), UINT32_C(2147483647), UINT32_C(2147483647), UINT32_C(2147483647),
+                UINT32_C(2147483647), UINT32_C(2126008810), UINT32_C(2147483647), UINT32_C(2130303777),
+                UINT32_C(2147483647), UINT32_C(2147483647), UINT32_C(2143188679), UINT32_C(2136746228),
+                UINT32_C(2147483647), UINT32_C(2126008810), UINT32_C(2147483647), UINT32_C(2147483647) };
+        /**Look up table 2 for the possible gas range values */
+        uint32_t lookupTable2[16] = { UINT32_C(4096000000), UINT32_C(2048000000), UINT32_C(1024000000), UINT32_C(512000000),
+                UINT32_C(255744255), UINT32_C(127110228), UINT32_C(64000000), UINT32_C(32258064), UINT32_C(16016016),
+                UINT32_C(8000000), UINT32_C(4000000), UINT32_C(2000000), UINT32_C(1000000), UINT32_C(500000),
+                UINT32_C(250000), UINT32_C(125000) };
+
+        var1g = (int64_t) ((1340 + (5 * range_sw_err)) *
+                ((int64_t) lookupTable1[gas_range])) >> 16;
+        var2g = (((int64_t) ((int64_t) gas_res_adc << 15) - (int64_t) (16777216)) + var1g);
+        var3g = (((int64_t) lookupTable2[gas_range] * (int64_t) var1g) >> 9);
+        gas_res_comp = (uint32_t) ((var3g + ((int64_t) var2g >> 1)) / (int64_t) var2g);
+        
+	//*current_gas_res = gas_res_comp;
+
+        if ((triggerStatus != kWarpStatusOK) || (i2cReadStatusMSB != kWarpStatusOK) || (i2cReadStatusLSB != kWarpStatusOK))
+        {
+                *current_gas_res = 0;
+        }
+        else
+        {
+                *current_gas_res = gas_res_comp;
+        }
 
 }

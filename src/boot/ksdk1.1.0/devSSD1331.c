@@ -155,20 +155,89 @@ devSSD1331init(void)
 	/*
 	 *	Any post-initialization drawing commands go here.
 	 */	
+
+	// Temp degree block
+	writeCommand(0x22);      // Enter 'draw rectangle' mode
+        writeCommand(0x1C);      // Start column address
+        writeCommand(0x02);      // Start row address
+        writeCommand(0x21);      // End column address
+        writeCommand(0x07);      // End row address
+        writeCommand(0x3F);      // Set outline colour C
+        writeCommand(0x3F);      // Set outline colour B
+        writeCommand(0x3F);      // Set outline colour A
+        writeCommand(0x3F);      // Set fill colour C
+        writeCommand(0x3F);      // Set fill colour B
+        writeCommand(0x3F);      // Set fill colour A
+
+	// Temp degree cutout
         writeCommand(0x22);      // Enter 'draw rectangle' mode
-	writeCommand(0x00);      // Start column address
-        writeCommand(0x00);      // Start row address
-        writeCommand(0x5F);      // End column address
-        writeCommand(0x3F);      // End row address
+        writeCommand(0x1E);      // Start column address
+        writeCommand(0x04);      // Start row address
+        writeCommand(0x1F);      // End column address
+        writeCommand(0x05);      // End row address
+        writeCommand(0x00);      // Set outline colour C
+        writeCommand(0x00);      // Set outline colour B
+        writeCommand(0x00);      // Set outline colour A
+        writeCommand(0x00);      // Set fill colour C
+        writeCommand(0x00);      // Set fill colour B
+        writeCommand(0x00);      // Set fill colour A
+
+        // Temp celsius block
+        writeCommand(0x22);      // Enter 'draw rectangle' mode
+        writeCommand(0x22);      // Start column address
+        writeCommand(0x0A);      // Start row address
+        writeCommand(0x29);      // End column address
+        writeCommand(0x17);      // End row address
+        writeCommand(0x3F);      // Set outline colour C
+        writeCommand(0x3F);      // Set outline colour B
+        writeCommand(0x3F);      // Set outline colour A
+        writeCommand(0x3F);      // Set fill colour C
+        writeCommand(0x3F);      // Set fill colour B
+        writeCommand(0x3F);      // Set fill colour A
+
+        // Temp celsius cutout
+        writeCommand(0x22);      // Enter 'draw rectangle' mode
+        writeCommand(0x24);      // Start column address
+        writeCommand(0x0C);      // Start row address
+        writeCommand(0x29);      // End column address
+        writeCommand(0x15);      // End row address
+        writeCommand(0x00);      // Set outline colour C
+        writeCommand(0x00);      // Set outline colour B
+        writeCommand(0x00);      // Set outline colour A
+        writeCommand(0x00);      // Set fill colour C
+        writeCommand(0x00);      // Set fill colour B
+        writeCommand(0x00);      // Set fill colour A
+
+	return 0;
+}
+
+
+
+
+
+void     devSSD1331DrawTemp(int draw_temp){
+
+	writeCommand(0x22);      // Enter 'draw rectangle' mode
+        writeCommand(0x1C);      // Start column address
+        writeCommand(0x02);      // Start row address
+        writeCommand(0x21);      // End column address
+        writeCommand(0x07);      // End row address
         writeCommand(0x00);      // Set outline colour C
         writeCommand(0x3F);      // Set outline colour B
         writeCommand(0x00);      // Set outline colour A
         writeCommand(0x00);      // Set fill colour C
         writeCommand(0x3F);      // Set fill colour B
         writeCommand(0x00);      // Set fill colour A
-	//writeCommand(0x82);      // Enter 'set contrast for colour B' mode
-	//writeCommand(0xFF);      // Set contrast for colour B
-	//writeCommand(0x87);      // Enter 'set master current control' mode
-	//writeCommand(0xF);       // Set master current control
-	return 0;
+
+        writeCommand(0x22);      // Enter 'draw rectangle' mode
+        writeCommand(0x1E);      // Start column address
+        writeCommand(0x04);      // Start row address
+        writeCommand(0x1F);      // End column address
+        writeCommand(0x05);      // End row address
+        writeCommand(0x00);      // Set outline colour C
+        writeCommand(0x00);      // Set outline colour B
+        writeCommand(0x00);      // Set outline colour A
+        writeCommand(0x00);      // Set fill colour C
+        writeCommand(0x00);      // Set fill colour B
+        writeCommand(0x00);      // Set fill colour A	
 }

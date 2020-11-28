@@ -1381,7 +1381,9 @@ main(void)
 	updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
 	SEGGER_RTT_printf(0, " \n %d, %d, %d ", current_temp, current_hum, current_gas_res); 
 	OSA_TimeDelay(2000);
-	//devSSD1331DrawTemp(current_temp);
+		devSSD1331DrawTemp(current_temp);
+		devSSD1331DrawHum(current_hum);
+		devSSD1331DrawIAQ(current_gas_res);
 	}
 	//printAllSensors(true /* printHeadersAndCalibration */, 0, 1000, menuI2cPullupValue);
 

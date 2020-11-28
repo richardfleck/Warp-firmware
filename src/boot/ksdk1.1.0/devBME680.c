@@ -447,7 +447,7 @@ void updateSensorDataBME680(int* current_temp, int* current_hum, int* current_ga
         }
         else
         {
-   		*current_temp = temp_comp;
+   		*current_temp = temp_comp / 100;
         }
 
         /*
@@ -494,7 +494,7 @@ void updateSensorDataBME680(int* current_temp, int* current_hum, int* current_ga
         }
         else
         {
-        	*current_hum = hum_comp;
+        	*current_hum = hum_comp / 1000;
         }
 
 
@@ -573,7 +573,10 @@ void updateSensorDataBME680(int* current_temp, int* current_hum, int* current_ga
         var2g = (((int64_t) ((int64_t) gas_res_adc << 15) - (int64_t) (16777216)) + var1g);
         var3g = (((int64_t) lookupTable2[gas_range] * (int64_t) var1g) >> 9);
         gas_res_comp = (uint32_t) ((var3g + ((int64_t) var2g >> 1)) / (int64_t) var2g);
-        
+        if (gas_res_comp > 50000){
+		gas_res_comp = 50000; // cap at 50kOhm
+	}
+ 
 	//*current_gas_res = gas_res_comp;
 
         if ((triggerStatus != kWarpStatusOK) || (i2cReadStatusMSB != kWarpStatusOK) || (i2cReadStatusLSB != kWarpStatusOK))
@@ -582,7 +585,7 @@ void updateSensorDataBME680(int* current_temp, int* current_hum, int* current_ga
         }
         else
         {
-                *current_gas_res = gas_res_comp;
+                *current_gas_res = gas_res_comp / 100;
         }
 
 }

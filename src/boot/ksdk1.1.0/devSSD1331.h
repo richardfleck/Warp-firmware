@@ -43,5 +43,6 @@ typedef enum
 } SSD1331Commands;
 
 int	devSSD1331init(void);
-void	devSSD1331DrawTemp(int draw_temp);
-
+void	devSSD1331DrawTemp(uint8_t temp);
+void    devSSD1331DrawHum(uint8_t hum);
+void	devSSD1331DrawIAQ(uint16_t gas_res);

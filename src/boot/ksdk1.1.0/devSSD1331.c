@@ -1,5 +1,5 @@
 #include <stdint.h>
-
+#include <stdbool.h>
 #include "fsl_spi_master_driver.h"
 #include "fsl_port_hal.h"
 
@@ -59,6 +59,69 @@ writeCommand(uint8_t commandByte)
 	return status;
 }
 
+void drawRectLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t C, uint8_t B, uint8_t A, bool rect){
+        if (rect == 1){
+		writeCommand(0x22); // Enter 'draw rectangle' mode
+	} else {
+		writeCommand(0x21); // Enter 'draw line' mode
+	}
+        writeCommand(x0);      // Start column address
+        writeCommand(y0);      // Start row address
+        writeCommand(x1);      // End column address
+        writeCommand(y1);      // End row address
+	writeCommand(C);       // Set outline colour C
+        writeCommand(B);       // Set outline colour B
+        writeCommand(A);       // Set outline colour A
+        writeCommand(C);       // Set fill colour C
+        writeCommand(B);       // Set fill colour B
+        writeCommand(A);       // Set fill colour A
+}
+
+void drawDigit(uint8_t x0, uint8_t y0, uint8_t number, uint8_t C, uint8_t B, uint8_t A){
+	drawRectLine(x0, y0, (x0+9), (y0+21), C, B, A, 1);
+	switch(number)
+	{
+		case 0:
+			drawRectLine(x0+2, y0+2, x0+7, y0+19, 0x00, 0x00, 0x00, 1);
+			break;
+		case 1:
+			drawRectLine(x0, y0, x0+7, y0+21, 0x00, 0x00, 0x00, 1);
+			break;
+		case 2: 
+			drawRectLine(x0, y0+2, x0+7, y0+9, 0x00, 0x00, 0x00, 1);
+			drawRectLine(x0+2, y0+12, x0+9, y0+19, 0x00, 0x00, 0x00, 1);
+			break;
+		case 3:
+                        drawRectLine(x0, y0+2, x0+7, y0+9, 0x00, 0x00, 0x00, 1);
+			drawRectLine(x0, y0+12, x0+7, y0+19, 0x00, 0x00, 0x00, 1);
+			break;
+		case 4:
+			drawRectLine(x0+2, y0, x0+7, y0+9, 0x00, 0x00, 0x00, 1);
+			drawRectLine(x0, y0+12, x0+7, y0+21, 0x00, 0x00, 0x00, 1);
+			break;
+		case 5:
+			drawRectLine(x0+2, y0+2, x0+9, y0+9, 0x00, 0x00, 0x00, 1);
+			drawRectLine(x0, y0+12, x0+7, y0+19, 0x00, 0x00, 0x00, 1);
+			break;
+		case 6:
+			drawRectLine(x0+2, y0+2, x0+9, y0+9, 0x00, 0x00, 0x00, 1);
+			drawRectLine(x0+2, y0+12, x0+7, y0+19, 0x00, 0x00, 0x00, 1);
+			break;
+		case 7: 
+			drawRectLine(x0, y0+2, x0+7, y0+21, 0x00, 0x00, 0x00, 1);
+			break;
+		case 8:
+			drawRectLine(x0+2, y0+2, x0+7, y0+9, 0x00, 0x00, 0x00, 1);
+			drawRectLine(x0+2, y0+12, x0+7, y0+19, 0x00, 0x00, 0x00, 1);
+			break;
+		case 9:
+			drawRectLine(x0+2, y0+2, x0+7, y0+9, 0x00, 0x00, 0x00, 1);
+			drawRectLine(x0, y0+12, x0+7, y0+19, 0x00, 0x00, 0x00, 1);
+			break;	
+		default:
+			break;
+	}
+}
 
 
 int
@@ -150,64 +213,25 @@ devSSD1331init(void)
 	writeCommand(0x5F);
 	writeCommand(0x3F);
 
-
-
 	/*
 	 *	Any post-initialization drawing commands go here.
 	 */	
 
-	// Temp degree block
-	writeCommand(0x22);      // Enter 'draw rectangle' mode
-        writeCommand(0x1C);      // Start column address
-        writeCommand(0x02);      // Start row address
-        writeCommand(0x21);      // End column address
-        writeCommand(0x07);      // End row address
-        writeCommand(0x3F);      // Set outline colour C
-        writeCommand(0x3F);      // Set outline colour B
-        writeCommand(0x3F);      // Set outline colour A
-        writeCommand(0x3F);      // Set fill colour C
-        writeCommand(0x3F);      // Set fill colour B
-        writeCommand(0x3F);      // Set fill colour A
-
-	// Temp degree cutout
-        writeCommand(0x22);      // Enter 'draw rectangle' mode
-        writeCommand(0x1E);      // Start column address
-        writeCommand(0x04);      // Start row address
-        writeCommand(0x1F);      // End column address
-        writeCommand(0x05);      // End row address
-        writeCommand(0x00);      // Set outline colour C
-        writeCommand(0x00);      // Set outline colour B
-        writeCommand(0x00);      // Set outline colour A
-        writeCommand(0x00);      // Set fill colour C
-        writeCommand(0x00);      // Set fill colour B
-        writeCommand(0x00);      // Set fill colour A
-
-        // Temp celsius block
-        writeCommand(0x22);      // Enter 'draw rectangle' mode
-        writeCommand(0x22);      // Start column address
-        writeCommand(0x0A);      // Start row address
-        writeCommand(0x29);      // End column address
-        writeCommand(0x17);      // End row address
-        writeCommand(0x3F);      // Set outline colour C
-        writeCommand(0x3F);      // Set outline colour B
-        writeCommand(0x3F);      // Set outline colour A
-        writeCommand(0x3F);      // Set fill colour C
-        writeCommand(0x3F);      // Set fill colour B
-        writeCommand(0x3F);      // Set fill colour A
-
-        // Temp celsius cutout
-        writeCommand(0x22);      // Enter 'draw rectangle' mode
-        writeCommand(0x24);      // Start column address
-        writeCommand(0x0C);      // Start row address
-        writeCommand(0x29);      // End column address
-        writeCommand(0x15);      // End row address
-        writeCommand(0x00);      // Set outline colour C
-        writeCommand(0x00);      // Set outline colour B
-        writeCommand(0x00);      // Set outline colour A
-        writeCommand(0x00);      // Set fill colour C
-        writeCommand(0x00);      // Set fill colour B
-        writeCommand(0x00);      // Set fill colour A
-
+	drawRectLine(0x1C, 0x02, 0x21, 0x07, 0x3F, 0x3F, 0x3F, 1); // Temp degree block
+	drawRectLine(0x1E, 0x04, 0x1F, 0x05, 0x00, 0x00, 0x00, 1); // Temp degree cutout
+	drawRectLine(0x22, 0x0B, 0x29, 0x17, 0x3F, 0x3F, 0x3F, 1); // Temp celsius block
+	drawRectLine(0x24, 0x0D, 0x29, 0x15, 0x00, 0x00, 0x00, 1); // Temp celsius cutout
+	drawRectLine(0x53, 0x16, 0x59, 0x08, 0x3F, 0x3F, 0x3F, 0); // Hum % slash
+	drawRectLine(0x50, 0x07, 0x55, 0x0C, 0x3F, 0x3F, 0x3F, 1); // Hum % upper block
+	drawRectLine(0x52, 0x09, 0x53, 0x0A, 0x00, 0x00, 0x00, 1); // Hum % upper cutout
+	drawRectLine(0x58, 0x12, 0x5D, 0x17, 0x3F, 0x3F, 0x3F, 1); // Hum % lower block
+	drawRectLine(0x5A, 0x14, 0x5B, 0x15, 0x00, 0x00, 0x00, 1); // Hum % lower cutout
+	drawRectLine(0x06, 0x1B, 0x59, 0x26, 0x3F, 0x3F, 0x3F, 1); // IAQ block
+	drawRectLine(0x08, 0x1D, 0x57, 0x24, 0x00, 0x00, 0x00, 1); // IAQ cutout		
+	//drawDigit(0x02, 0x02, 8, 0x00, 0x3F, 0x00);
+        //drawDigit(0x10, 0x02, 9, 0x00, 0x00, 0x3F);
+        //drawDigit(0x36, 0x02, 0, 0x3F, 0x00, 0x3F);
+        //drawDigit(0x44, 0x02, 2, 0x3F, 0x00, 0x00);
 	return 0;
 }
 
@@ -215,29 +239,21 @@ devSSD1331init(void)
 
 
 
-void     devSSD1331DrawTemp(int draw_temp){
-
-	writeCommand(0x22);      // Enter 'draw rectangle' mode
-        writeCommand(0x1C);      // Start column address
-        writeCommand(0x02);      // Start row address
-        writeCommand(0x21);      // End column address
-        writeCommand(0x07);      // End row address
-        writeCommand(0x00);      // Set outline colour C
-        writeCommand(0x3F);      // Set outline colour B
-        writeCommand(0x00);      // Set outline colour A
-        writeCommand(0x00);      // Set fill colour C
-        writeCommand(0x3F);      // Set fill colour B
-        writeCommand(0x00);      // Set fill colour A
-
-        writeCommand(0x22);      // Enter 'draw rectangle' mode
-        writeCommand(0x1E);      // Start column address
-        writeCommand(0x04);      // Start row address
-        writeCommand(0x1F);      // End column address
-        writeCommand(0x05);      // End row address
-        writeCommand(0x00);      // Set outline colour C
-        writeCommand(0x00);      // Set outline colour B
-        writeCommand(0x00);      // Set outline colour A
-        writeCommand(0x00);      // Set fill colour C
-        writeCommand(0x00);      // Set fill colour B
-        writeCommand(0x00);      // Set fill colour A	
+void    devSSD1331DrawTemp(uint8_t temp){
+	uint8_t digit1 = (temp / 10) % 10;
+	uint8_t digit0 = temp % 10;	
+        drawDigit(0x02, 0x02, digit1, 0x00, 0x3F, 0x00);
+        drawDigit(0x10, 0x02, digit0, 0x00, 0x3F, 0x00);
 }
+
+void    devSSD1331DrawHum(uint8_t hum){
+        uint8_t digit1 = (hum / 10) % 10;
+        uint8_t digit0 = hum % 10;
+        drawDigit(0x36, 0x02, digit1, 0x00, 0x3F, 0x00);
+        drawDigit(0x44, 0x02, digit0, 0x00, 0x3F, 0x00);
+}
+
+void	devSSD1331DrawIAQ(uint16_t gas_res){
+	uint8_t sliderLength = (gas_res * 80) / 500;
+	drawRectLine(0x08, 0x1D, sliderLength+8, 0x24, 0x00, 0x3F, 0x00, 1);
+}            

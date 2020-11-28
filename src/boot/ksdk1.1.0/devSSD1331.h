@@ -46,3 +46,7 @@ int	devSSD1331init(void);
 void	devSSD1331DrawTemp(uint8_t temp);
 void    devSSD1331DrawHum(uint8_t hum);
 void	devSSD1331DrawIAQ(uint16_t gas_res);
+void	devSSD1331DrawWindowIcon();
+void    devSSD1331DrawRadiatorIcon();
+void	devSSD1331ClearWindowIcon();
+void	devSSD1331DrawSmiley();

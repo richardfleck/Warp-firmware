@@ -1378,12 +1378,31 @@ main(void)
                                         );
 	int current_temp, current_hum, current_gas_res;
 	for(int i = 0; i < 10; i = i+1){
-	updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
-	SEGGER_RTT_printf(0, " \n %d, %d, %d ", current_temp, current_hum, current_gas_res); 
-	OSA_TimeDelay(2000);
+		updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
+		SEGGER_RTT_printf(0, " \n %d, %d, %d ", current_temp, current_hum, current_gas_res); 
+		OSA_TimeDelay(2000);
 		devSSD1331DrawTemp(current_temp);
 		devSSD1331DrawHum(current_hum);
 		devSSD1331DrawIAQ(current_gas_res);
+		
+		bool conditions_good = 1;
+		if((current_temp > 25) | (current_gas_res < 200) | (current_hum > 60)){
+			devSSD1331DrawWindowIcon();
+			conditions_good = 0;
+		}
+		else{
+			devSSD1331ClearWindowIcon(); 
+		}
+		if((current_temp < 20) | (((current_temp >= 20) & (current_temp <= 25)) & ((current_gas_res < 200) | (current_hum > 60)))){
+         		devSSD1331DrawRadiatorIcon();
+			conditions_good = 0;
+		}
+		else{
+			devSSD1331ClearRadiatorIcon();
+		}
+		if(conditions_good){
+			devSSD1331DrawSmiley();
+		}
 	}
 	//printAllSensors(true /* printHeadersAndCalibration */, 0, 1000, menuI2cPullupValue);
 

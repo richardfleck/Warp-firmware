@@ -392,7 +392,7 @@ printSensorDataBME680(bool hexModeFlag, uint16_t menuI2cPullupValue)
 }
 
 
-void updateSensorDataBME680(int* current_temp, int* current_hum, int* current_gas_res, uint16_t menuI2cPullupValue){
+void updateSensorDataBME680(uint8_t* current_temp, uint8_t* current_hum, uint16_t* current_gas_res, uint16_t menuI2cPullupValue){
         uint16_t        readSensorRegisterValueLSB;
         uint16_t        readSensorRegisterValueMSB;
         uint16_t        readSensorRegisterValueXLSB;

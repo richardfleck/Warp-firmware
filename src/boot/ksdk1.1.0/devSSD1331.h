@@ -49,4 +49,6 @@ void	devSSD1331DrawIAQ(uint16_t gas_res);
 void	devSSD1331DrawWindowIcon();
 void    devSSD1331DrawRadiatorIcon();
 void	devSSD1331ClearWindowIcon();
+void	devSSD1331ClearRadiatorIcon();
 void	devSSD1331DrawSmiley();
+void	devSSD1331ClearMiddle();

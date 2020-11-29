@@ -1376,15 +1376,41 @@ main(void)
                                                         0b00000000,     /*      Keep heater on                                                  */
                                                         menuI2cPullupValue
                                         );
-	int current_temp, current_hum, current_gas_res;
-	for(int i = 0; i < 10; i = i+1){
+	uint8_t current_temp, current_hum;
+	uint16_t current_gas_res;
+	uint8_t previous_temp = 0;
+	uint8_t previous_hum = 0;
+	uint16_t previous_gas_res = 0;
+
+	devSSD1331DrawTemp(88);
+	devSSD1331DrawHum(88);
+	devSSD1331DrawIAQ(500);
+	devSSD1331DrawWindowIcon();
+	devSSD1331DrawRadiatorIcon();
+	devSSD1331DrawSmiley();
+        enableI2Cpins(menuI2cPullupValue);
+        SEGGER_RTT_printf(0, "\n Current/uA, Bus Voltage/mV");
+        for (int i = 0; i<1000; i=i+1){
+        	printSensorDataINA219();
+	}
+
+	for(int i = 0; i < 5; i = i+1){
 		updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
 		SEGGER_RTT_printf(0, " \n %d, %d, %d ", current_temp, current_hum, current_gas_res); 
 		OSA_TimeDelay(2000);
+	
+		// Only redraw readings if they change	
+		if(current_temp != previous_temp){
 		devSSD1331DrawTemp(current_temp);
+		}
+		if(current_hum != previous_hum){
 		devSSD1331DrawHum(current_hum);
+		}
+		if(current_gas_res != previous_gas_res){
 		devSSD1331DrawIAQ(current_gas_res);
+		}
 		
+		// Conditions for window icon to be displayed 
 		bool conditions_good = 1;
 		if((current_temp > 25) | (current_gas_res < 200) | (current_hum > 60)){
 			devSSD1331DrawWindowIcon();
@@ -1393,6 +1419,8 @@ main(void)
 		else{
 			devSSD1331ClearWindowIcon(); 
 		}
+
+		// Conditions for radiator icon to be displayed
 		if((current_temp < 20) | (((current_temp >= 20) & (current_temp <= 25)) & ((current_gas_res < 200) | (current_hum > 60)))){
          		devSSD1331DrawRadiatorIcon();
 			conditions_good = 0;
@@ -1400,9 +1428,19 @@ main(void)
 		else{
 			devSSD1331ClearRadiatorIcon();
 		}
+
+		// Conditions for smiley to be displayed
 		if(conditions_good){
 			devSSD1331DrawSmiley();
 		}
+		else{
+			devSSD1331ClearMiddle();
+		}
+
+		// Update previous values
+		previous_temp = current_temp;
+		previous_hum = current_hum;
+		previous_gas_res = current_gas_res;
 	}
 	//printAllSensors(true /* printHeadersAndCalibration */, 0, 1000, menuI2cPullupValue);
 

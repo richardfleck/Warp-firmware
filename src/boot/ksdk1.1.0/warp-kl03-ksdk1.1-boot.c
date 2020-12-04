@@ -1376,13 +1376,14 @@ main(void)
                                                         0b00000000,     /*      Keep heater on                                                  */
                                                         menuI2cPullupValue
                                         );
+	configureSensorVEML7700(menuI2cPullupValue);
 	uint8_t current_temp, current_hum;
-	uint16_t current_gas_res;
+	uint16_t current_gas_res, current_lux;
 	uint8_t previous_temp = 0;
 	uint8_t previous_hum = 0;
 	uint16_t previous_gas_res = 0;
 	uint16_t gas_res_consecutive_bad = 0;
-
+/*
 	devSSD1331DrawTemp(88);
 	devSSD1331DrawHum(88);
 	devSSD1331DrawIAQ(500);
@@ -1390,7 +1391,7 @@ main(void)
 	devSSD1331DrawRadiatorIcon();
 	devSSD1331DrawSmiley();
 
-	/*   Power measurement
+	//   Power measurement
         enableI2Cpins(menuI2cPullupValue);
         SEGGER_RTT_printf(0, "\n Current/uA, Bus Voltage/mV");
         for (int i = 0; i<10; i=i+1){
@@ -1399,9 +1400,12 @@ main(void)
 	}
 	*/
 
-	for(int i = 0; i < 5; i = i+1){
+	for(int i = 0; i < 20; i = i+1){
+		enableI2Cpins(menuI2cPullupValue);
+		printSensorDataVEML7700(0);
 		updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
-		SEGGER_RTT_printf(0, " \n %d, %d, %d ", current_temp, current_hum, current_gas_res); 
+		updateSensorDataVEML7700(&current_lux);
+		SEGGER_RTT_printf(0, " \n %d, %d, %d ", current_temp, current_hum, current_gas_res, current_lux); 
 		OSA_TimeDelay(2000);
 	
 		// Only redraw readings if they change	
@@ -1434,12 +1438,27 @@ main(void)
 			devSSD1331ClearRadiatorIcon();
 		}
 
-		// Conditions for smiley to be displayed
-		if(conditions_good){
-			devSSD1331DrawSmiley();
+		// Conditions for light icon to be displayed red (light too high) 
+		if(current_lux > 500){
+			devSSD1331DrawLightIcon(0x3F, 0x00, 0x00);
+			conditions_good = 0;
+		}
+		else if(current_lux < 300) {
+			devSSD1331DrawLightIcon(0x00, 0x00, 0x3F);
+			conditions_good = 0;
 		}
 		else{
 			devSSD1331ClearMiddle();
+		}
+
+		// Catch-all unhealthy conditions
+		if((current_temp < 20) | (current_temp > 24) | (current_hum < 40) | (current_hum > 60) | (current_gas_res < 200) | (current_lux < 300) | (current_lux > 5000)){
+			conditions_good = 0;
+		}
+		
+		// Conditions for smiley to be displayed
+		if(conditions_good){
+			devSSD1331DrawSmiley();
 		}
 
 		// Update previous values

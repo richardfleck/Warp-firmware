@@ -12,3 +12,4 @@ WarpStatus	readSensorSignalVEML7700(WarpTypeMask signal,
 					WarpSignalReliability reliability,
 					WarpSignalNoise noise);
 void		printSensorDataVEML7700(bool hexModeFlag);
+void            updateSensorDataVEML7700(uint16_t *current_lux);

@@ -236,9 +236,6 @@ devSSD1331init(void)
 }
 
 
-
-
-
 void    devSSD1331DrawTemp(uint8_t temp){
 	uint8_t digit1 = (temp / 10) % 10;
 	uint8_t digit0 = temp % 10;
@@ -307,6 +304,13 @@ void	devSSD1331DrawRadiatorIcon(){
 
 void	devSSD1331ClearRadiatorIcon(){
 	drawRectLine(0x46, 0x2A, 0x5C, 0x3D, 0x00, 0x00, 0x00, 1);
+}
+
+void    devSSD1331DrawLightIcon(uint8_t C, uint8_t B, uint8_t A){
+        drawRectLine(0x2F, 0x2A, 0x30, 0x3D, C, B, A, 1);
+        drawRectLine(0x26, 0x33, 0x39, 0x34, C, B, A, 1);
+        drawRectLine(0x28, 0x2C, 0x37, 0x3B, C, B, A, 0);
+	drawRectLine(0x37, 0x2C, 0x28, 0x3B, C, B, A, 0);
 }
 
 void	devSSD1331DrawSmiley(){

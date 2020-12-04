@@ -50,5 +50,6 @@ void	devSSD1331DrawWindowIcon();
 void    devSSD1331DrawRadiatorIcon();
 void	devSSD1331ClearWindowIcon();
 void	devSSD1331ClearRadiatorIcon();
+void    devSSD1331DrawLightIcon(uint8_t C, uint8_t B, uint8_t A);
 void	devSSD1331DrawSmiley();
 void	devSSD1331ClearMiddle();

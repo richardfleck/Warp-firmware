@@ -31,7 +31,7 @@ initVEML7700(const uint8_t i2cAddress, WarpI2CDeviceState volatile *  deviceStat
 }
 
 WarpStatus
-writeSensorRegisterVEML7700(uint8_t deviceRegister, uint8_t payload, uint16_t menuI2cPullupValue)
+writeSensorRegisterVEML7700(uint8_t deviceRegister, uint8_t payload1, uint8_t payload0, uint16_t menuI2cPullupValue)
 {
 	uint8_t		payloadByte[2], commandByte[1];
 	i2c_status_t	status;
@@ -57,8 +57,8 @@ writeSensorRegisterVEML7700(uint8_t deviceRegister, uint8_t payload, uint16_t me
 	};
 
 	commandByte[0] = deviceRegister;
-	payloadByte[0] = 0b00000000;
-	payloadByte[1] = 0b00000000;
+	payloadByte[0] = payload0;
+	payloadByte[1] = payload1;
 	status = I2C_DRV_MasterSendDataBlocking(
 							0 /* I2C instance */,
 							&slave,
@@ -78,11 +78,14 @@ writeSensorRegisterVEML7700(uint8_t deviceRegister, uint8_t payload, uint16_t me
 WarpStatus
 configureSensorVEML7700(uint16_t menuI2cPullupValue)
 {
-	WarpStatus	i2cWriteStatus1 = 1;
+	WarpStatus	i2cWriteStatus0, i2cWriteStatus1, i2cWriteStatus2;
 
-	i2cWriteStatus1 = writeSensorRegisterVEML7700(0x00, 0xCC, menuI2cPullupValue);
+	i2cWriteStatus0 = writeSensorRegisterVEML7700(0x00, 0x00, 0b11000010, menuI2cPullupValue);
+        i2cWriteStatus1 = writeSensorRegisterVEML7700(0x01, 0x4E, 0x20, menuI2cPullupValue);
+        i2cWriteStatus2 = writeSensorRegisterVEML7700(0x02, 0x27, 0x10, menuI2cPullupValue);
+	
 
-	return (i2cWriteStatus1);
+	return (i2cWriteStatus0 | i2cWriteStatus1 | i2cWriteStatus2);
 }
 
 WarpStatus
@@ -159,7 +162,35 @@ printSensorDataVEML7700(bool hexModeFlag)
 		}
 		else
 		{
-			SEGGER_RTT_printf(0, " %d,", readSensorRegisterValueCombined);
+			SEGGER_RTT_printf(0, " %d,", readSensorRegisterValueCombined/139);
 		}
 	}
 }
+
+
+
+
+void
+updateSensorDataVEML7700(uint16_t * current_lux)
+{
+        uint16_t                readSensorRegisterValueLSB;
+        uint16_t                readSensorRegisterValueMSB;
+        int32_t readSensorRegisterValueCombined;
+        WarpStatus      i2cReadStatus;
+
+        i2cReadStatus = readSensorRegisterVEML7700(0x04, 2 /* numberOfBytes */);
+        readSensorRegisterValueMSB = deviceVEML7700State.i2cBuffer[0];
+        readSensorRegisterValueLSB = deviceVEML7700State.i2cBuffer[1];
+        readSensorRegisterValueCombined = ((readSensorRegisterValueMSB & 0xFF) << 8) | (readSensorRegisterValueLSB & 0xFF);
+
+        if (i2cReadStatus != kWarpStatusOK)
+        {
+                SEGGER_RTT_WriteString(0, " ----,");
+        }
+        else
+        {
+		*current_lux = readSensorRegisterValueCombined/139;
+        }
+}
+
+

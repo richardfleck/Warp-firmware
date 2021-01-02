@@ -278,7 +278,7 @@ void    devSSD1331DrawHum(uint8_t hum){
 }
 
 void	devSSD1331DrawIAQ(uint16_t gas_res){
-	// Draw gas resistance/indoor air quality slider (red if below 20kOhm and green if above)
+	// Draw gas resistance/indoor air quality slider (red if below 20kOhm, green if above)
 
 	uint8_t sliderLength = (gas_res * 80) / 500;
 	drawRectLine(0x08, 0x1D, 0x57, 0x24, 0x00, 0x00, 0x00, 1);

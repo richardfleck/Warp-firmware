@@ -60,6 +60,8 @@ writeCommand(uint8_t commandByte)
 }
 
 void drawRectLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t C, uint8_t B, uint8_t A, bool rect){
+	// Draw a rectangle or line from (x0, y0) to (x1, y1) of colour (C, B, A)
+
         if (rect == 1){
 		writeCommand(0x22); // Enter 'draw rectangle' mode
 	} else {
@@ -78,7 +80,12 @@ void drawRectLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t C, uin
 }
 
 void drawDigit(uint8_t x0, uint8_t y0, uint8_t number, uint8_t C, uint8_t B, uint8_t A){
+	// Draw digit from starting upper left corner (x0, y0) of colour (C, B, A)
+
+	// First draw block of colour (C, B, A)
 	drawRectLine(x0, y0, (x0+9), (y0+21), C, B, A, 1);
+
+	// Depending on the number, different parts of the block are cut out
 	switch(number)
 	{
 		case 0:
@@ -214,7 +221,7 @@ devSSD1331init(void)
 	writeCommand(0x3F);
 
 	/*
-	 *	Any post-initialization drawing commands go here.
+	 *	Draw fixed lines and icons
 	 */	
 
 	drawRectLine(0x1C, 0x02, 0x21, 0x07, 0x3F, 0x3F, 0x3F, 1); // Temp degree block
@@ -228,15 +235,13 @@ devSSD1331init(void)
 	drawRectLine(0x5A, 0x14, 0x5B, 0x15, 0x00, 0x00, 0x00, 1); // Hum % lower cutout
 	drawRectLine(0x06, 0x1B, 0x59, 0x26, 0x3F, 0x3F, 0x3F, 1); // IAQ block
 	drawRectLine(0x08, 0x1D, 0x57, 0x24, 0x00, 0x00, 0x00, 1); // IAQ cutout		
-	//drawDigit(0x02, 0x02, 8, 0x00, 0x3F, 0x00);
-        //drawDigit(0x10, 0x02, 9, 0x00, 0x00, 0x3F);
-        //drawDigit(0x36, 0x02, 0, 0x3F, 0x00, 0x3F);
-        //drawDigit(0x44, 0x02, 2, 0x3F, 0x00, 0x00);
 	return 0;
 }
 
 
 void    devSSD1331DrawTemp(uint8_t temp){
+	// Draw two-digit temperature reading (blue if <20, red if >25, green if acceptable)
+
 	uint8_t digit1 = (temp / 10) % 10;
 	uint8_t digit0 = temp % 10;
 	if(temp<20){	
@@ -254,6 +259,8 @@ void    devSSD1331DrawTemp(uint8_t temp){
 }
 
 void    devSSD1331DrawHum(uint8_t hum){
+	// Draw two-digit %rH reading (blue if <40, red if >60, green if acceptable)
+
         uint8_t digit1 = (hum / 10) % 10;
         uint8_t digit0 = hum % 10;
 	if (hum < 40) {
@@ -266,11 +273,13 @@ void    devSSD1331DrawHum(uint8_t hum){
 	}
 	else { 
 		drawDigit(0x36, 0x02, digit1, 0x00, 0x3F, 0x00);
-                drawDigit(0x44, 0x02, digit0, 0x00, 0x3F, 0x00);
+		drawDigit(0x44, 0x02, digit0, 0x00, 0x3F, 0x00);
 	}
 }
 
 void	devSSD1331DrawIAQ(uint16_t gas_res){
+	// Draw gas resistance/indoor air quality slider (red if below 20kOhm and green if above)
+
 	uint8_t sliderLength = (gas_res * 80) / 500;
 	drawRectLine(0x08, 0x1D, 0x57, 0x24, 0x00, 0x00, 0x00, 1);
 	if (gas_res > 200){
@@ -328,5 +337,6 @@ void	devSSD1331DrawSmiley(){
 }
 
 void	devSSD1331ClearMiddle(){
+	// Clears the middle portion of the bottom row, where both the light icon and smiley icon can appear
 	drawRectLine(0x23, 0x2A, 0x3C, 0x3D, 0x00, 0x00, 0x00, 1);
 }	

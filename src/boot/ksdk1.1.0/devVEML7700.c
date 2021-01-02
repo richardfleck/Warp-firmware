@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 
 #include "fsl_misc_utilities.h"
@@ -15,12 +14,10 @@
 #include "SEGGER_RTT.h"
 #include "warp.h"
 
-
 extern volatile WarpI2CDeviceState	deviceVEML7700State;
 extern volatile uint32_t		gWarpI2cBaudRateKbps;
 extern volatile uint32_t		gWarpI2cTimeoutMilliseconds;
 extern volatile uint32_t		gWarpSupplySettlingDelayMilliseconds;
-
 
 
 void
@@ -79,13 +76,10 @@ WarpStatus
 configureSensorVEML7700(uint16_t menuI2cPullupValue)
 {
 	WarpStatus	i2cWriteStatus0, i2cWriteStatus1, i2cWriteStatus2;
-	i2cWriteStatus0 = writeSensorRegisterVEML7700(0x00, 0x00, 0x01, menuI2cPullupValue); // shutdown
-	i2cWriteStatus1 = writeSensorRegisterVEML7700(0x00, 0x00, 0b11000001, menuI2cPullupValue); // set gain = 0 and integration time = 800ms
-        i2cWriteStatus2 = writeSensorRegisterVEML7700(0x00, 0x00, 0b11000000, menuI2cPullupValue); // power on
-	//i2cWriteStatus1 = writeSensorRegisterVEML7700(0x01, 0x4E, 0x20, menuI2cPullupValue);
-        //i2cWriteStatus2 = writeSensorRegisterVEML7700(0x02, 0x27, 0x10, menuI2cPullupValue);
+	i2cWriteStatus0 = writeSensorRegisterVEML7700(0x00, 0x00, 0x01, menuI2cPullupValue); 	// shutdown
+	i2cWriteStatus1 = writeSensorRegisterVEML7700(0x00, 0x00, 0b11000001, menuI2cPullupValue); 	// set gain = 0 and integration time = 800ms
+        i2cWriteStatus2 = writeSensorRegisterVEML7700(0x00, 0x00, 0b11000000, menuI2cPullupValue); 	// power on
 	
-
 	return (i2cWriteStatus0 | i2cWriteStatus1 | i2cWriteStatus2);
 }
 
@@ -139,59 +133,27 @@ readSensorRegisterVEML7700(uint8_t deviceRegister, int numberOfBytes)
 }
 
 void
-printSensorDataVEML7700(bool hexModeFlag)
-{
-	uint16_t		readSensorRegisterValueLSB;
-	uint16_t		readSensorRegisterValueMSB;
-	int32_t	readSensorRegisterValueCombined;
-	WarpStatus	i2cReadStatus;
-
-	i2cReadStatus = readSensorRegisterVEML7700(0x04, 2 /* numberOfBytes */);
-	readSensorRegisterValueMSB = deviceVEML7700State.i2cBuffer[0];
-	readSensorRegisterValueLSB = deviceVEML7700State.i2cBuffer[1];
-	readSensorRegisterValueCombined = ((readSensorRegisterValueMSB & 0xFF) << 8) | (readSensorRegisterValueLSB & 0xFF);
-	
-	if (i2cReadStatus != kWarpStatusOK)
-	{
-		SEGGER_RTT_WriteString(0, " ----,");
-	}
-	else
-	{
-		if (hexModeFlag)
-		{
-			SEGGER_RTT_printf(0, " 0x%02x 0x%02x,", readSensorRegisterValueMSB, readSensorRegisterValueLSB);
-		}
-		else
-		{
-			SEGGER_RTT_printf(0, " %d,", readSensorRegisterValueCombined/139);
-		}
-	}
-}
-
-
-
-
-void
 updateSensorDataVEML7700(uint16_t * current_lux)
 {
-        uint16_t                readSensorRegisterValueLSB;
-        uint16_t                readSensorRegisterValueMSB;
-        int32_t readSensorRegisterValueCombined;
+        uint16_t         readSensorRegisterValueLSB;
+        uint16_t         readSensorRegisterValueMSB;
+        int32_t		readSensorRegisterValueCombined;
         WarpStatus      i2cReadStatus;
 
+	// Read 16-bit light intensity value from register 0x04
         i2cReadStatus = readSensorRegisterVEML7700(0x04, 2 /* numberOfBytes */);
         readSensorRegisterValueMSB = deviceVEML7700State.i2cBuffer[1];
         readSensorRegisterValueLSB = deviceVEML7700State.i2cBuffer[0];
         readSensorRegisterValueCombined = ((readSensorRegisterValueMSB & 0xFF) << 8) | (readSensorRegisterValueLSB & 0xFF);
 
+	// Update current_lux with latest valid reading
+	// With gain 0 and integration time 800ms, divide reading by 139 to get value in lux (conversion table given in datasheet)
         if (i2cReadStatus != kWarpStatusOK)
         {
-                SEGGER_RTT_WriteString(0, " ----,");
+                *current_lux = 0;
         }
         else
         {
 		*current_lux = readSensorRegisterValueCombined/139;
         }
 }
-
-

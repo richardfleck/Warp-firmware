@@ -1377,37 +1377,13 @@ main(void)
                                                         menuI2cPullupValue
                                         );
 	configureSensorVEML7700(menuI2cPullupValue);
+
 	uint8_t current_temp, current_hum;
 	uint16_t current_gas_res, current_lux;
 	uint8_t previous_temp = 0;
 	uint8_t previous_hum = 0;
 	uint16_t previous_gas_res = 0;
-	uint16_t gas_res_consecutive_bad = 0;
-/*
-	devSSD1331DrawTemp(88);
-	devSSD1331DrawHum(88);
-	devSSD1331DrawIAQ(500);
-	devSSD1331DrawWindowIcon();
-	devSSD1331DrawRadiatorIcon();
-	devSSD1331DrawSmiley();
 
-	//   Power measurement
-        enableI2Cpins(menuI2cPullupValue);
-        SEGGER_RTT_printf(0, "\n Current/uA, Bus Voltage/mV");
-        for (int i = 0; i<1000; i=i+1){
-        	//updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
-		updateSensorDataVEML7700(&current_lux);
-		printSensorDataINA219();
-	}
-*/	
-/*
-        while(1){
-                enableI2Cpins(menuI2cPullupValue);
-		updateSensorDataVEML7700(&current_lux);
-		SEGGER_RTT_printf(0, " \n %d", current_lux);
-		OSA_TimeDelay(1000);
-	}	
-*/
 	while(1){
 		enableI2Cpins(menuI2cPullupValue);
 		updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
@@ -1415,7 +1391,6 @@ main(void)
 		SEGGER_RTT_printf(0, " \n %d, %d, %d, %d ", current_temp, current_hum, current_gas_res, current_lux);
 		current_temp = current_temp/10;
 		OSA_TimeDelay(2000);		
-
 	
 		// Only redraw readings if they change	
 		if(current_temp != previous_temp){
@@ -1447,15 +1422,15 @@ main(void)
 			devSSD1331ClearRadiatorIcon();
 		}
 
-		// Conditions for light icon to be displayed red (light too high) 
+		// Conditions for light icon to be displayed 
 		if(current_lux > 500){
 			devSSD1331ClearMiddle();
-			devSSD1331DrawLightIcon(0x3F, 0x00, 0x00);
+			devSSD1331DrawLightIcon(0x3F, 0x00, 0x00); // Draw red
 			conditions_good = 0;
 		}
 		else if(current_lux < 300) {
 			devSSD1331ClearMiddle();
-			devSSD1331DrawLightIcon(0x00, 0x00, 0x3F);
+			devSSD1331DrawLightIcon(0x00, 0x00, 0x3F); // Draw blue
 			conditions_good = 0;
 		}
 		else{
@@ -2832,10 +2807,6 @@ printAllSensors(bool printHeadersAndCalibration, bool hexModeFlag, int menuDelay
 		#ifdef WARP_BUILD_ENABLE_DEVL3GD20H
 		printSensorDataL3GD20H(hexModeFlag);
 		#endif
-		#ifdef WARP_BUILD_ENABLE_DEVBME680
-		printSensorDataBME680(hexModeFlag);
-		#endif
-                printSensorDataVEML7700(hexModeFlag);
 		#ifdef WARP_BUILD_ENABLE_DEVBMX055
 		printSensorDataBMX055accel(hexModeFlag);
 		printSensorDataBMX055mag(hexModeFlag);

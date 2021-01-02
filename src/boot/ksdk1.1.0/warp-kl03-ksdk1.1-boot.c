@@ -1372,7 +1372,7 @@ main(void)
         enableI2Cpins(menuI2cPullupValue);
         OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
         configureSensorBME680(  0b00000001,     /*      Humidity oversampling (OSRS) to 1x                              */
-                                                        0b00100101,     /*      Temperature oversample 1x, pressure overdsample 1x, mode 00     */
+                                                        0b00100101,     /*      Temperature oversample 1x, pressure overdsample 1x, mode 01     */
                                                         0b00000000,     /*      Keep heater on                                                  */
                                                         menuI2cPullupValue
                                         );

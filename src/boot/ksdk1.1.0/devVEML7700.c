@@ -79,10 +79,11 @@ WarpStatus
 configureSensorVEML7700(uint16_t menuI2cPullupValue)
 {
 	WarpStatus	i2cWriteStatus0, i2cWriteStatus1, i2cWriteStatus2;
-
-	i2cWriteStatus0 = writeSensorRegisterVEML7700(0x00, 0x00, 0b11000010, menuI2cPullupValue);
-        i2cWriteStatus1 = writeSensorRegisterVEML7700(0x01, 0x4E, 0x20, menuI2cPullupValue);
-        i2cWriteStatus2 = writeSensorRegisterVEML7700(0x02, 0x27, 0x10, menuI2cPullupValue);
+	i2cWriteStatus0 = writeSensorRegisterVEML7700(0x00, 0x00, 0x01, menuI2cPullupValue); // shutdown
+	i2cWriteStatus1 = writeSensorRegisterVEML7700(0x00, 0x00, 0b11000001, menuI2cPullupValue); // set gain = 0 and integration time = 800ms
+        i2cWriteStatus2 = writeSensorRegisterVEML7700(0x00, 0x00, 0b11000000, menuI2cPullupValue); // power on
+	//i2cWriteStatus1 = writeSensorRegisterVEML7700(0x01, 0x4E, 0x20, menuI2cPullupValue);
+        //i2cWriteStatus2 = writeSensorRegisterVEML7700(0x02, 0x27, 0x10, menuI2cPullupValue);
 	
 
 	return (i2cWriteStatus0 | i2cWriteStatus1 | i2cWriteStatus2);
@@ -179,8 +180,8 @@ updateSensorDataVEML7700(uint16_t * current_lux)
         WarpStatus      i2cReadStatus;
 
         i2cReadStatus = readSensorRegisterVEML7700(0x04, 2 /* numberOfBytes */);
-        readSensorRegisterValueMSB = deviceVEML7700State.i2cBuffer[0];
-        readSensorRegisterValueLSB = deviceVEML7700State.i2cBuffer[1];
+        readSensorRegisterValueMSB = deviceVEML7700State.i2cBuffer[1];
+        readSensorRegisterValueLSB = deviceVEML7700State.i2cBuffer[0];
         readSensorRegisterValueCombined = ((readSensorRegisterValueMSB & 0xFF) << 8) | (readSensorRegisterValueLSB & 0xFF);
 
         if (i2cReadStatus != kWarpStatusOK)

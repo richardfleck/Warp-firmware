@@ -1371,7 +1371,7 @@ main(void)
         SEGGER_RTT_WriteString(0, "\r\n\tEnabling I2C pins...\n");
         enableI2Cpins(menuI2cPullupValue);
         OSA_TimeDelay(gWarpMenuPrintDelayMilliseconds);
-       configureSensorBME680(  0b00000001,     /*      Humidity oversampling (OSRS) to 1x                              */
+        configureSensorBME680(  0b00000001,     /*      Humidity oversampling (OSRS) to 1x                              */
                                                         0b00100101,     /*      Temperature oversample 1x, pressure overdsample 1x, mode 00     */
                                                         0b00000000,     /*      Keep heater on                                                  */
                                                         menuI2cPullupValue
@@ -1394,19 +1394,28 @@ main(void)
 	//   Power measurement
         enableI2Cpins(menuI2cPullupValue);
         SEGGER_RTT_printf(0, "\n Current/uA, Bus Voltage/mV");
-        for (int i = 0; i<10; i=i+1){
-        	updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
+        for (int i = 0; i<1000; i=i+1){
+        	//updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
+		updateSensorDataVEML7700(&current_lux);
 		printSensorDataINA219();
 	}
-	*/
-
-	for(int i = 0; i < 20; i = i+1){
+*/	
+/*
+        while(1){
+                enableI2Cpins(menuI2cPullupValue);
+		updateSensorDataVEML7700(&current_lux);
+		SEGGER_RTT_printf(0, " \n %d", current_lux);
+		OSA_TimeDelay(1000);
+	}	
+*/
+	while(1){
 		enableI2Cpins(menuI2cPullupValue);
-		printSensorDataVEML7700(0);
 		updateSensorDataBME680(&current_temp, &current_hum, &current_gas_res, menuI2cPullupValue);
 		updateSensorDataVEML7700(&current_lux);
-		SEGGER_RTT_printf(0, " \n %d, %d, %d ", current_temp, current_hum, current_gas_res, current_lux); 
-		OSA_TimeDelay(2000);
+		SEGGER_RTT_printf(0, " \n %d, %d, %d, %d ", current_temp, current_hum, current_gas_res, current_lux);
+		current_temp = current_temp/10;
+		OSA_TimeDelay(2000);		
+
 	
 		// Only redraw readings if they change	
 		if(current_temp != previous_temp){
@@ -1440,10 +1449,12 @@ main(void)
 
 		// Conditions for light icon to be displayed red (light too high) 
 		if(current_lux > 500){
+			devSSD1331ClearMiddle();
 			devSSD1331DrawLightIcon(0x3F, 0x00, 0x00);
 			conditions_good = 0;
 		}
 		else if(current_lux < 300) {
+			devSSD1331ClearMiddle();
 			devSSD1331DrawLightIcon(0x00, 0x00, 0x3F);
 			conditions_good = 0;
 		}

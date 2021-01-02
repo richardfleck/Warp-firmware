@@ -447,7 +447,7 @@ void updateSensorDataBME680(uint8_t* current_temp, uint8_t* current_hum, uint16_
         }
         else
         {
-   		*current_temp = temp_comp / 100;
+   		*current_temp = temp_comp / 10;
         }
 
         /*
